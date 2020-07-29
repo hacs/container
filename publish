@@ -1,0 +1,15 @@
+#!/bin/bash
+
+tag=$1
+
+
+if [ -z $tag ]; then
+ echo "no tag"
+ exit
+fi
+
+cat TOKEN | docker login -u ludeeus --password-stdin
+
+docker build . --compress -f $tag.Dockerfile -t hacscontainer/$tag
+
+docker push hacscontainer/$tag
