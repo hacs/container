@@ -4,8 +4,6 @@ RUN \
     apk add --no-cache \
         git \
         make \
-    \
-    && apk add --no-cache --virtual .build-deps  \
         build-base \
         libffi-dev \
         openssl-dev \
@@ -16,7 +14,6 @@ RUN \
     && make init \
     \
     && rm -rf /tmp/integration \
-	&& apk del --no-network .build-deps \
 	\
 	&& find /usr/local \
         \( -type d -a -name test -o -name tests -o -name '__pycache__' \) \
