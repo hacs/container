@@ -1,42 +1,24 @@
-FROM ludeeus/container:debian-base
+FROM python:3.8.5-alpine3.12
 
-# Install the correct python version
-ARG PYTHON_VERSION="3.8.5"
 RUN \
-    apt update && apt install -y --no-install-recommends --allow-downgrades \
-        build-essential \
-        libncursesw5-dev libssl-dev \
-        libsqlite3-dev \
-        tk-dev \
-        libgdbm-dev \
-        libc6-dev \
-        libbz2-dev \
+    apk add --no-cache \
+        git \
+        make \
+    \
+    && apk add --no-cache --virtual .build-deps  \
+        build-base \
         libffi-dev \
-        zlib1g-dev \
+        openssl-dev \
+        python3-dev \
     \
-    && cd /opt \
-    && wget "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" \
-    && tar xzf Python-${PYTHON_VERSION}.tgz \
-    && cd Python-${PYTHON_VERSION} \
-    && ./configure --enable-optimizations \
-    && make altinstall \
-    \
-    && rm /opt/Python-${PYTHON_VERSION}.tgz \
-    && rm -fr /var/lib/apt/lists/* \
-    && rm -fr /tmp/* /var/{cache,log}/* \
-    \
-    && ln -sf /usr/local/bin/python3.8 /usr/local/bin/python3 \
-    && ln -sf /usr/local/bin/python3.8 /usr/local/bin/python \
-    && python --version \
-    && python3 --version
-
-# Install HACS requirements
-RUN \
-    git clone https://github.com/hacs/integration.git /tmp/integration \
+    && git clone https://github.com/hacs/integration.git /tmp/integration \
     && cd /tmp/integration \
-    && apt update && apt install -y sudo libxml2-dev libxslt-dev \
     && make init \
     \
     && rm -rf /tmp/integration \
-    && rm -fr /var/lib/apt/lists/* \
-    && rm -fr /tmp/* /var/{cache,log}/*
+	&& apk del --no-network .build-deps \
+	\
+	&& find /usr/local \
+        \( -type d -a -name test -o -name tests -o -name '__pycache__' \) \
+        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
+        -exec rm -rf '{}' \;

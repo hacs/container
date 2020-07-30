@@ -8,8 +8,11 @@ if [ -z $tag ]; then
  exit
 fi
 
+version=$(cat $tag.Dockerfile | grep FROM | cut -d ':' -f 2 | cut -d '-' -f 1)
+
 cat TOKEN | docker login -u ludeeus --password-stdin
 
-docker build . --compress -f $tag.Dockerfile -t hacscontainer/$tag
+docker build . --compress -f $tag.Dockerfile -t hacscontainer/$tag:latest -t hacscontainer/$tag:$version
 
-docker push hacscontainer/$tag
+docker push hacscontainer/$tag:latest
+docker push hacscontainer/$tag:$version
