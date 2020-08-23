@@ -3,16 +3,27 @@
 tag=$1
 
 
+function publish {
+    _tag=$1
+    if [ -z $_tag ]; then
+        echo "no tag"
+        exit
+    fi
+
+    version=$(cat $_tag.Dockerfile | grep FROM | cut -d ':' -f 2 | cut -d '-' -f 1)
+
+    cat TOKEN | docker login -u ludeeus --password-stdin
+
+    docker build . --compress -f $_tag.Dockerfile -t hacscontainer/$_tag:latest -t hacscontainer/$_tag:$version
+
+    docker push hacscontainer/$_tag:latest
+    docker push hacscontainer/$_tag:$version
+}
+
 if [ -z $tag ]; then
- echo "no tag"
- exit
+    for _tag in "python37" "python38" "python39"; do
+        publish $_tag
+    done
+else
+    publish $tag
 fi
-
-version=$(cat $tag.Dockerfile | grep FROM | cut -d ':' -f 2 | cut -d '-' -f 1)
-
-cat TOKEN | docker login -u ludeeus --password-stdin
-
-docker build . --compress -f $tag.Dockerfile -t hacscontainer/$tag:latest -t hacscontainer/$tag:$version
-
-docker push hacscontainer/$tag:latest
-docker push hacscontainer/$tag:$version
